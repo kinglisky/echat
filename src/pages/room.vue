@@ -49,7 +49,7 @@ export default {
     // 创建视频流数据
     createLocalStream () {
       return navigator.mediaDevices.getUserMedia({
-        // audio: true,
+        audio: true,
         video: true
       }).then(stream => {
         this.selfStream = stream
@@ -227,7 +227,6 @@ export default {
       return
     }
     this.dog = Dog.child(room)
-    this.dog.child(nickname).onDisconnect().remove()
     this.dog.child(nickname).onDisconnect().remove()
     this.createLocalStream().then(this.init)
   },

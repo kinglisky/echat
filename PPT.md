@@ -1,4 +1,8 @@
+title: 基于 WebRtc 搭建一个简单的视屏聊天室
+speaker: 陈南
+
 # 基于 WebRtc 搭建一个简单的视屏聊天室
+----
 
 github pages 自定义域名的 https 还没配置，chrome 强制要求 WebRtc 上 https 的，这个把栗子挂 coding 了
 
@@ -6,20 +10,26 @@ github pages 自定义域名的 https 还没配置，chrome 强制要求 WebRtc 
 
 只做成了简单的两人视频，输入同样的房间号进入同一个房间就行了，野狗或者网络的原因不成功可以换个房间试试 😁。
 
-
+[slide]
 ## WebRtc
+----
 
 维基的定义：WebRTC，名称源自网页即时通信（英语：Web Real-Time Communication）的缩写，是一个支持网页浏览器进行实时语音对话或视频对话的API。它于2011年6月1日开源并在Google、Mozilla、Opera支持下被纳入万维网联盟的W3C推荐标准
 
 简单来说让浏览器提供JS的即时通信接口，可通过信令交换建立一个浏览器与浏览器之间（peer-to-peer）的信道，而不经过服务器直接实现浏览器之间的点对点通讯，高效的稳定的数据传输。
 
+[slide]
+
 ## 主要的三个 API
+----
 
 MediaStream：通过 MediaStream 的 API 能够通过设备的摄像头及话筒获得视频、音频的同步流
 
 RTCPeerConnection：RTCPeerConnection 是 WebRTC 用于构建点对点之间稳定、高效的流传输的组件
 
 RTCDataChannel：RTCDataChannel 使得浏览器之间（点对点）建立一个高吞吐量、低延时的信道，可传输任意数据
+
+[slide]
 
 
 MediaStream 提供了调用媒体设备的功能
@@ -41,6 +51,7 @@ getUserMedia({
 })
 
 ```
+[slide]
 
 获取配置的配体流数据，可通过 URL.createObjectURL(stream) 将媒体流数据输入到 video 上，P.S view 要加上 autoplay 否则不会自动播放
 
@@ -53,6 +64,8 @@ getUserMedia 处理可以配置 video audio 还可以配置其他一些东西如
 * 视频流的最大帧速率 MaxFramerate
 * ......
 
+[slide]
+
 
 RTCPeerConnection
 
@@ -61,6 +74,8 @@ WebRTC 使用 RTCPeerConnection 来在浏览器之间传递流数据,WebRTC 使�
 嗯，此处敲一下黑板，但我们还是不能抛弃能抛弃服务器的，我们仍然需要它来为我们传递信令（signaling）来建立这个信道。WebRTC 没有定义用于建立信道的信令的协议：信令并不是 RTCPeerConnection API的一部分
 
 通过 RTCPeerConnection 建立点对点链接还是有点麻烦的......
+
+[slide]
 
 看个小栗子
 
@@ -136,6 +151,8 @@ socket.onmessage = function (event) {
 }
 ```
 
+[slide]
+
 WebRTC 通过 RTCPeerConnection 建立点对点链接，最主要的是两点：
 
 * 信令交换
@@ -152,12 +169,16 @@ WebRTC 通过 RTCPeerConnection 建立点对点链接，最主要的是两点：
 * 会话描述协议（Session Description Protocol）确定本机上的媒体流的特性，比如分辨率、编解码能力。
 * 连接两端的主机的网络地址，NAT/防火墙穿越（ICE Candidate）
 
+[slide]
+
 
 下面讲一下最最主要的信令交换：
 
 首先是 SDP 的交换：
 
+[slide]
 ![信息交换](https://raw.githubusercontent.com/RWebRTC/Blog/pictures/pictures/jsep.png)
+[slide]
 
 下面有 A 和 B 两个浏览器，它们交换信令的过程大概是：
 
@@ -171,6 +192,8 @@ WebRTC 通过 RTCPeerConnection 建立点对点链接，最主要的是两点：
 * B 将 answer 信令通过服务器发送给 A
 * A 接收到 B 的 answer 信令后，将其中 B 的 SDP 描述符提取出来，调用 setRemoteDescripttion() 方法交给A自己的 PC 实例
 
+[slide]
+
 简单来描述就是：
 
 * A 创建 offer。
@@ -181,6 +204,8 @@ WebRTC 通过 RTCPeerConnection 建立点对点链接，最主要的是两点：
 
 通过在这一系列的信令交换之后，A 和 B 所创建的 PC 实例都包含 A 和 B 的 SDP 描述符了。我们还需要交换两端主机的网络地址，即 ICE Candidate 的交换
 
+[slide]
+
 ICE 的交换其实发生在 A 和 B 的 SDP 描述符交换期间。简单来说：
 
 * A 创建完 PC 实例后并为其添加 onicecandidate 事件回调。
@@ -190,7 +215,11 @@ ICE 的交换其实发生在 A 和 B 的 SDP 描述符交换期间。简单来�
 
 ICE 交换只需要一方含有另一方的 ICE 描述就行，不需要和 SDP 交换一样需要相互交换。
 
+[slide]
+
 [看个栗子吧!](https://webrtc.github.io/samples/src/content/peerconnection/munge-sdp/)
+
+[slide]
 
 
 会话描述协议 SDP 大概长这个样子
@@ -288,6 +317,8 @@ a=ssrc:3539687233 mslabel:d4d74bdc-e8fc-4164-b3ae-3b0297f8753a
 a=ssrc:3539687233 label:c9156452-3788-43b4-8d56-f0bf6af8e624
 ```
 
+[slide]
+
 一大堆各种描述数据，有兴趣的可以去官方手册查查都什么意思
 通过 SDP 可以确定本机上的媒体流的特性，比如分辨率、编解码能力等
 
@@ -299,13 +330,21 @@ candidate:2134056857 1 udp 2122260223 10.12.36.13 59024 typ host generation 0 uf
 candidate:1184379673 1 tcp 1518214911 10.12.77.20 9 typ host tcptype active generation 0 ufrag YdMb network-id 1 network-cost 10
 ```
 
+[slide]
+
 获取浏览所处的网络环境信息，ICE Candidate 交换其实就是浏览器之间的 NAT 穿越。在处于使用了 NAT 设备的私有TCP/IP网络中的主机之间需要建立连接时需要使用 NAT 穿越技术。
 
+[slide]
+
 ![NAT 穿越技术](https://raw.githubusercontent.com/RWebRTC/Blog/pictures/pictures/dataPathways.png)
+
+[slide]
 
 ICE，全名叫交互式连接建立（Interactive Connectivity Establishment）,一种综合性的 NAT 穿越技术，它是一种框架，可以整合各种 NAT 穿越技术如 STUN、TURN（Traversal Using Relay NAT 中继NAT实现的穿透）
 
 这里使用的的是 Google 的 STUN 服务器，国内野狗也有一个同样的，地址是 `stun:cn1-stun.wilddog.com:3478`
+
+[slide]
 
 
 ## RTCDataChannel
@@ -331,6 +370,8 @@ DataChannel使用方式几乎和WebSocket一样，有几个事件：
 
 这次聊天室应用没有用到，但它用处是非常大的。
 
+[slide]
+
 
 ## 通过野狗建立后端中转服务
 
@@ -338,17 +379,19 @@ DataChannel使用方式几乎和WebSocket一样，有几个事件：
 
 数据结构大概是酱紫的：
 
+[slide]
 ![data0](http://7xodob.com1.z0.glb.clouddn.com/data0.png)
-
+[slide]
 ![data1](http://7xodob.com1.z0.glb.clouddn.com/data1.png)
-
+[slide]
 ![data2](http://7xodob.com1.z0.glb.clouddn.com/data2.png)
-
+[slide]
 用户进入的房间号是 room，room 下面随机生成 userid，userid 底下的 mailbox 存放各种交换信息
 
 简单的中转就监听，给同一个 room 下的其他用户（other userid）发送链接信息，然后其他用户响应返回给自己（userid），信心存放在 mailbox 下面，看看野狗文档大概就懂了，和直接用 socket 转发信息有点不一样。
 
 
+[slide]
 
 
 ## 参考资料
