@@ -2,7 +2,7 @@
 
 github pages 自定义域名的 https 还没配置，chrome 强制要求 WebRtc 上 https 的，这个把栗子挂 coding 了
 
-[试一波](https://kingli.coding.me/echat/#/)
+[试一波](https://kingli.coding.me/echat/#/) https://github.com/kinglisky/echat
 
 只做成了简单的两人视频，输入同样的房间号进入同一个房间就行了，野狗或者网络的原因不成功可以换个房间试试 😁。
 
